@@ -1,2 +1,21 @@
 /* Custom styles for Rugved AI */
 /* All styling is handled by Tailwind CSS */
+
+/* Text formatting styles */
+strong {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+em {
+  font-style: italic;
+  color: #e5e7eb;
+}
+
+code {
+  background-color: #374151;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}

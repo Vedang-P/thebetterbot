@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, Mic, Send, Volume2, Copy, Check, Settings, X, ArrowDown, KeyRound, LogOut } from 'lucide-react';
+import { Moon, Mic, Send, Volume2, Copy, Check, Settings, X, ArrowDown, KeyRound, LogOut } from 'lucide-react';
+import './App.css';
 
 // --- Main App Component ---
 export default function App() {
@@ -145,6 +146,16 @@ export default function App() {
 
         if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
             aiResponseText = result.candidates[0].content.parts[0].text;
+            
+            // Clean up the response text
+            aiResponseText = aiResponseText
+                .replace(/\*\*/g, '') // Remove asterisks
+                .replace(/\*/g, '') // Remove single asterisks
+                .replace(/^\s*[-*]\s*/gm, '') // Remove list markers
+                .replace(/^\s*[0-9]+\.\s*/gm, '') // Remove numbered list markers
+                .replace(/^\s*[-*+]\s*/gm, '') // Remove bullet points
+                .replace(/\n{3,}/g, '\n\n') // Limit consecutive newlines
+                .trim();
         } else {
             aiResponseText = "I'm sorry, I couldn't generate a response. Please try again.";
         }
@@ -180,7 +191,17 @@ export default function App() {
 
   const speak = (text) => {
     if ('speechSynthesis' in window && text) {
-      const utterance = new SpeechSynthesisUtterance(text);
+      // Clean text for speech synthesis
+      const cleanText = text
+        .replace(/<[^>]*>/g, '') // Remove HTML tags
+        .replace(/\*\*/g, '') // Remove asterisks
+        .replace(/\*/g, '') // Remove single asterisks
+        .replace(/`/g, '') // Remove backticks
+        .replace(/\n/g, ' ') // Replace newlines with spaces
+        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .trim();
+      
+      const utterance = new SpeechSynthesisUtterance(cleanText);
       speechSynthesis.cancel(); // Cancel any previous speech
       speechSynthesis.speak(utterance);
     }
@@ -193,6 +214,18 @@ export default function App() {
 
   const handleSettingsChange = (setting) => {
     setSettings(prev => ({ ...prev, [setting]: !prev[setting] }));
+  };
+
+  // Function to format text with proper styling
+  const formatText = (text) => {
+    if (!text) return '';
+    
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
+      .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic text
+      .replace(/`(.*?)`/g, '<code>$1</code>') // Code
+      .replace(/"(.*?)"/g, '<strong>"$1"</strong>') // Bold quotes
+      .replace(/\n/g, '<br>'); // Line breaks
   };
 
   // --- Render ---
@@ -300,7 +333,7 @@ export default function App() {
           
           <AnimatePresence>
             {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
+              <MessageBubble key={msg.id} message={msg} formatText={formatText} />
             ))}
           </AnimatePresence>
           {isTyping && <TypingIndicator />}
@@ -400,7 +433,7 @@ export default function App() {
 }
 
 // --- Sub-components ---
-const MessageBubble = ({ message }) => {
+const MessageBubble = ({ message, formatText }) => {
   const { text, sender, error } = message;
   const isUser = sender === 'user';
   const [copied, setCopied] = useState(false);
@@ -440,7 +473,10 @@ const MessageBubble = ({ message }) => {
           ? 'bg-black border border-gray-600 text-white' 
           : 'bg-gray-800 border border-gray-700 text-gray-100'
       } ${error ? 'bg-red-900 border-red-600 text-red-200' : ''}`}>
-        <p className="whitespace-pre-wrap leading-relaxed">{text || "..."}</p>
+        <div 
+          className="whitespace-pre-wrap leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: isUser ? text : formatText(text) }}
+        />
         {!isUser && text && !error && (
           <div className="flex items-center gap-2 mt-3 text-gray-400">
             <button 
