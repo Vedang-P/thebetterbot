@@ -137,7 +137,7 @@ export default function App() {
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error.message || `API call failed with status: ${response.status}`);
+            throw new Error(`An error occurred. Please try again.`);
         }
 
         const result = await response.json();
@@ -158,7 +158,7 @@ export default function App() {
 
     } catch (error) {
       console.error('Error sending message:', error);
-      const errorMessage = { text: `Sorry, something went wrong: ${error.message}`, sender: 'ai', error: true, id: Date.now() + 1 };
+      const errorMessage = { text: `Sorry, an error occurred. Please try again.`, sender: 'ai', error: true, id: Date.now() + 1 };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsTyping(false);
@@ -187,7 +187,8 @@ export default function App() {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
+    // Theme is always dark
+    setTheme('dark');
   };
 
   const handleSettingsChange = (setting) => {
@@ -196,8 +197,17 @@ export default function App() {
 
   // --- Render ---
   return (
-    <div className="flex h-screen w-screen bg-gray-900 text-gray-100 font-sans">
-      {/* --- API Key Modal --- */}
+    <div 
+      className="flex h-screen w-screen text-gray-100 font-sans"
+      style={{
+        backgroundImage: 'url(/rugved%20background.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: '#000000'
+      }}
+    >
+      {/* --- Login Modal --- */}
        <AnimatePresence>
         {showApiModal && (
           <motion.div
@@ -213,11 +223,11 @@ export default function App() {
               className="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4"
             >
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-black border border-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <KeyRound className="text-white" size={32} />
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
-                <p className="text-gray-400">Enter your login credentials to continue</p>
+                <h2 className="text-2xl font-bold text-white mb-2">Welcome to Rugved AI</h2>
+                <p className="text-gray-400">Enter your access key to continue</p>
               </div>
               
               <form onSubmit={handleApiKeySubmit} className="space-y-4">
@@ -226,14 +236,14 @@ export default function App() {
                     type="password"
                     value={tempApiKey}
                     onChange={(e) => setTempApiKey(e.target.value)}
-                    placeholder="Enter your API key"
+                    placeholder="Enter your access key"
                     className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
                     required
                   />
                 </div>
                 <button 
                   type="submit" 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-semibold transition-colors duration-200"
+                  className="w-full bg-black hover:bg-gray-800 border border-gray-600 text-white rounded-xl py-3 font-semibold transition-colors duration-200"
                 >
                   Continue
                 </button>
@@ -244,13 +254,15 @@ export default function App() {
       </AnimatePresence>
 
       {/* --- Main Chat Area --- */}
-      <div className="flex flex-col flex-1">
-        <header className="flex items-center justify-between p-6 border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm">
+      <div className="flex flex-col flex-1 bg-black bg-opacity-50 backdrop-blur-sm">
+        <header className="flex items-center justify-between p-4 border-b border-gray-800 bg-black/50 backdrop-blur-sm">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-lg">R</span>
-            </div>
-            <h1 className="text-xl font-bold text-white">Rugved AI</h1>
+            <img 
+              src="/rugved%20logo.png" 
+              alt="Rugved AI" 
+              className="w-10 h-10 rounded-xl object-cover"
+            />
+            <h1 className="text-xl font-bold text-white">RUGVED AI</h1>
           </div>
           <div className="flex items-center space-x-2">
             <button 
@@ -264,7 +276,7 @@ export default function App() {
               onClick={toggleTheme} 
               className="p-2 rounded-xl hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
             >
-              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+              <Moon size={20} />
             </button>
             <button 
               onClick={() => setShowSettings(true)} 
@@ -275,7 +287,7 @@ export default function App() {
           </div>
         </header>
 
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-6 space-y-6 relative bg-gray-900">
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 relative bg-transparent">
           {messages.length === 0 && !isTyping && (
             <div className="text-center text-gray-500 mt-20">
               <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -295,15 +307,15 @@ export default function App() {
           {showScrollDown && (
             <button 
               onClick={scrollToBottom} 
-              className="absolute bottom-20 right-8 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-colors z-10"
+              className="absolute bottom-20 right-8 bg-black hover:bg-gray-800 border border-gray-600 text-white p-3 rounded-full shadow-lg transition-colors z-10"
             >
                 <ArrowDown size={20} />
             </button>
           )}
         </div>
 
-        <div className="p-6 border-t border-gray-800 bg-gray-900/50 backdrop-blur-sm">
-          <div className="relative bg-gray-800 border border-gray-700 rounded-2xl flex items-end p-3">
+        <div className="p-4 border-t border-gray-800 bg-black/50 backdrop-blur-sm">
+          <div className="relative bg-black border border-gray-600 rounded-xl flex items-end p-2">
             <textarea
               ref={textareaRef}
               value={input}
@@ -331,7 +343,7 @@ export default function App() {
             <button 
               onClick={handleSendMessage} 
               disabled={isTyping || !input.trim()} 
-              className="p-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white ml-2 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-xl bg-black hover:bg-gray-800 border border-gray-600 text-white ml-2 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
             >
               <Send size={20} />
             </button>
@@ -417,13 +429,15 @@ const MessageBubble = ({ message }) => {
       className={`flex items-start gap-3 ${isUser ? 'justify-end' : ''}`}
     >
       {!isUser && (
-        <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
-          R
-        </div>
+        <img 
+          src="/rugved%20logo.png" 
+          alt="Rugved AI" 
+          className="w-8 h-8 rounded-xl object-cover flex-shrink-0"
+        />
       )}
-      <div className={`max-w-xl p-4 rounded-2xl ${
+      <div className={`max-w-xl p-3 rounded-xl ${
         isUser 
-          ? 'bg-blue-600 text-white' 
+          ? 'bg-black border border-gray-600 text-white' 
           : 'bg-gray-800 border border-gray-700 text-gray-100'
       } ${error ? 'bg-red-900 border-red-600 text-red-200' : ''}`}>
         <p className="whitespace-pre-wrap leading-relaxed">{text || "..."}</p>
@@ -454,10 +468,12 @@ const TypingIndicator = () => (
     animate={{ opacity: 1, y: 0 }}
     className="flex items-center gap-3"
   >
-    <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
-        R
-    </div>
-    <div className="flex items-center space-x-1 p-4 bg-gray-800 border border-gray-700 rounded-2xl">
+    <img 
+      src="/rugved%20logo.png" 
+      alt="Rugved AI" 
+      className="w-8 h-8 rounded-xl object-cover flex-shrink-0"
+    />
+    <div className="flex items-center space-x-1 p-3 bg-gray-800 border border-gray-700 rounded-xl">
       <motion.div
         className="w-2 h-2 bg-gray-400 rounded-full"
         animate={{ y: [0, -4, 0] }}
