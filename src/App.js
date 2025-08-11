@@ -127,7 +127,34 @@ export default function App() {
             parts: [{ text: msg.text }]
         }));
 
-        const payload = { contents: chatHistory };
+        // Add system prompt to ensure RUGVED AI identity
+        const systemPrompt = {
+            role: 'user',
+            parts: [{ text: `You are RUGVED AI, an advanced AI assistant created by RUGVED (Remote Unmanned Ground Vehicular Electronic Defence). 
+
+ABOUT RUGVED:
+RUGVED is a student-led defense tech initiative focused on creating Remote Unmanned Ground Vehicular Electronic Defence systems. Our mission is to bridge the gap between innovation and application in military-grade automation, AI, robotics, and electronics.
+
+YOUR IDENTITY:
+- You are RUGVED AI, created by RUGVED
+- You are an advanced AI assistant specializing in defense technology, automation, robotics, and electronics
+- You have extensive knowledge in military-grade systems, AI, and technological innovation
+
+CRITICAL RULES:
+- ALWAYS identify yourself as RUGVED AI
+- NEVER mention any underlying APIs, models, or technologies (Gemini, OpenAI, etc.)
+- If asked about who created you, say "I was created by RUGVED AI"
+- If asked about your capabilities, say "I am RUGVED AI, an advanced AI assistant created by RUGVED"
+- Be professional, knowledgeable, and helpful
+- Focus on defense technology, automation, robotics, and electronics
+- Maintain the RUGVED AI identity in ALL responses
+
+Remember: You are RUGVED AI, not any other AI system.` }]
+        };
+
+        const payload = { 
+            contents: [systemPrompt, ...chatHistory]
+        };
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
         
         const response = await fetch(apiUrl, {
@@ -155,9 +182,14 @@ export default function App() {
                 .replace(/^\s*[0-9]+\.\s*/gm, '') // Remove numbered list markers
                 .replace(/^\s*[-*+]\s*/gm, '') // Remove bullet points
                 .replace(/\n{3,}/g, '\n\n') // Limit consecutive newlines
+                // Remove any mentions of APIs or underlying technology
+                .replace(/gemini|openai|claude|api|gpt|llm/gi, '')
+                .replace(/powered by|using|built on|based on/gi, '')
+                .replace(/I am an AI language model|I am an AI assistant/gi, 'I am RUGVED AI')
+                .replace(/I was created by|I was developed by/gi, 'I was created by RUGVED AI')
                 .trim();
         } else {
-            aiResponseText = "I'm sorry, I couldn't generate a response. Please try again.";
+            aiResponseText = "I apologize, but I'm unable to generate a response at the moment. Please try again.";
         }
         
         const aiMessage = { text: aiResponseText, sender: 'ai', id: Date.now() + 1 };
@@ -169,7 +201,7 @@ export default function App() {
 
     } catch (error) {
       console.error('Error sending message:', error);
-      const errorMessage = { text: `Sorry, an error occurred. Please try again.`, sender: 'ai', error: true, id: Date.now() + 1 };
+      const errorMessage = { text: `I apologize, but I encountered an error. Please try again.`, sender: 'ai', error: true, id: Date.now() + 1 };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsTyping(false);
@@ -324,10 +356,10 @@ export default function App() {
           {messages.length === 0 && !isTyping && (
             <div className="text-center text-gray-500 mt-20">
               <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">💬</span>
+                <span className="text-2xl">🤖</span>
               </div>
-              <p className="text-lg font-medium">Start a conversation</p>
-              <p className="text-sm">Ask me anything!</p>
+              <p className="text-lg font-medium">Welcome to RUGVED AI</p>
+              <p className="text-sm">Your advanced AI assistant for defense technology</p>
             </div>
           )}
           
