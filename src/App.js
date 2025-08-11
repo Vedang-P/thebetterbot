@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, Mic, Send, Volume2, Copy, Check, Settings, X, ArrowDown, KeyRound } from 'lucide-react';
+import { Sun, Moon, Mic, Send, Volume2, Copy, Check, Settings, X, ArrowDown, KeyRound, LogOut } from 'lucide-react';
 
 // --- Main App Component ---
 export default function App() {
@@ -102,6 +102,13 @@ export default function App() {
     }
   };
 
+  const handleLogout = () => {
+    setApiKey('');
+    localStorage.removeItem('rugved_api_key');
+    setShowApiModal(true);
+    setMessages([]);
+  };
+
   const handleSendMessage = async () => {
     if (input.trim() === '' || isTyping) return;
 
@@ -118,7 +125,6 @@ export default function App() {
             role: msg.sender === 'user' ? 'user' : 'model',
             parts: [{ text: msg.text }]
         }));
-        // The last message is the user's current input, so we don't need to add it again.
 
         const payload = { contents: chatHistory };
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
@@ -190,7 +196,7 @@ export default function App() {
 
   // --- Render ---
   return (
-    <div className="flex h-screen w-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans">
+    <div className="flex h-screen w-screen bg-gray-900 text-gray-100 font-sans">
       {/* --- API Key Modal --- */}
        <AnimatePresence>
         {showApiModal && (
@@ -198,29 +204,38 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+            className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 backdrop-blur-sm"
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-md"
+              className="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4"
             >
-              <form onSubmit={handleApiKeySubmit}>
-                <h2 className="text-xl font-bold mb-4 text-center">Login Credentials</h2>
-                <p className="text-center text-gray-600 dark:text-gray-400 mb-6">Please enter your credentials to continue.</p>
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <KeyRound className="text-white" size={32} />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
+                <p className="text-gray-400">Enter your login credentials to continue</p>
+              </div>
+              
+              <form onSubmit={handleApiKeySubmit} className="space-y-4">
                 <div className="relative">
-                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                   <input 
                     type="password"
                     value={tempApiKey}
                     onChange={(e) => setTempApiKey(e.target.value)}
-                    placeholder="Enter your credentials here"
-                    className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter your API key"
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
+                    required
                   />
                 </div>
-                <button type="submit" className="w-full mt-6 bg-blue-500 text-white rounded-lg p-2 font-bold hover:bg-blue-600 transition-colors">
-                  Login
+                <button 
+                  type="submit" 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-semibold transition-colors duration-200"
+                >
+                  Continue
                 </button>
               </form>
             </motion.div>
@@ -230,19 +245,47 @@ export default function App() {
 
       {/* --- Main Chat Area --- */}
       <div className="flex flex-col flex-1">
-        <header className="flex items-center justify-between p-4 border-b border-gray-300 dark:border-gray-700">
-          <h1 className="text-xl font-bold">Rugved AI</h1>
+        <header className="flex items-center justify-between p-6 border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-lg">R</span>
+            </div>
+            <h1 className="text-xl font-bold text-white">Rugved AI</h1>
+          </div>
           <div className="flex items-center space-x-2">
-            <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+            <button 
+              onClick={handleLogout}
+              className="p-2 rounded-xl hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
+              title="Logout"
+            >
+              <LogOut size={20} />
+            </button>
+            <button 
+              onClick={toggleTheme} 
+              className="p-2 rounded-xl hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
+            >
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
-            <button onClick={() => setShowSettings(true)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+            <button 
+              onClick={() => setShowSettings(true)} 
+              className="p-2 rounded-xl hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
+            >
               <Settings size={20} />
             </button>
           </div>
         </header>
 
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 relative">
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-6 space-y-6 relative bg-gray-900">
+          {messages.length === 0 && !isTyping && (
+            <div className="text-center text-gray-500 mt-20">
+              <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">💬</span>
+              </div>
+              <p className="text-lg font-medium">Start a conversation</p>
+              <p className="text-sm">Ask me anything!</p>
+            </div>
+          )}
+          
           <AnimatePresence>
             {messages.map((msg) => (
               <MessageBubble key={msg.id} message={msg} />
@@ -250,14 +293,17 @@ export default function App() {
           </AnimatePresence>
           {isTyping && <TypingIndicator />}
           {showScrollDown && (
-            <button onClick={scrollToBottom} className="absolute bottom-20 right-8 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 transition-colors z-10">
-                <ArrowDown size={24} />
+            <button 
+              onClick={scrollToBottom} 
+              className="absolute bottom-20 right-8 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-colors z-10"
+            >
+                <ArrowDown size={20} />
             </button>
           )}
         </div>
 
-        <div className="p-4 md:p-6 border-t border-gray-300 dark:border-gray-700">
-          <div className="relative bg-gray-200 dark:bg-gray-800 rounded-xl flex items-end p-2">
+        <div className="p-6 border-t border-gray-800 bg-gray-900/50 backdrop-blur-sm">
+          <div className="relative bg-gray-800 border border-gray-700 rounded-2xl flex items-end p-3">
             <textarea
               ref={textareaRef}
               value={input}
@@ -268,14 +314,25 @@ export default function App() {
                   handleSendMessage();
                 }
               }}
-              placeholder="Type a message..."
+              placeholder="Type your message..."
               rows={1}
-              className="flex-1 bg-transparent resize-none outline-none text-base mx-2 max-h-48"
+              className="flex-1 bg-transparent resize-none outline-none text-base mx-2 max-h-48 text-white placeholder-gray-400"
             />
-            <button onClick={handleMicClick} className={`p-2 rounded-full transition-colors ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'hover:bg-gray-300 dark:hover:bg-gray-600'}`}>
+            <button 
+              onClick={handleMicClick} 
+              className={`p-2 rounded-xl transition-colors ${
+                isRecording 
+                  ? 'bg-red-600 text-white animate-pulse' 
+                  : 'hover:bg-gray-700 text-gray-400 hover:text-white'
+              }`}
+            >
               <Mic size={20} />
             </button>
-            <button onClick={handleSendMessage} disabled={isTyping || !input.trim()} className="p-2 rounded-full bg-blue-500 text-white ml-2 hover:bg-blue-600 disabled:bg-blue-300 dark:disabled:bg-blue-800 disabled:cursor-not-allowed">
+            <button 
+              onClick={handleSendMessage} 
+              disabled={isTyping || !input.trim()} 
+              className="p-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white ml-2 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
+            >
               <Send size={20} />
             </button>
           </div>
@@ -289,28 +346,36 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 backdrop-blur-sm"
             onClick={() => setShowSettings(false)}
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md"
+              className="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-bold">Settings</h2>
-                <button onClick={() => setShowSettings(false)} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-white">Settings</h2>
+                <button 
+                  onClick={() => setShowSettings(false)} 
+                  className="p-2 rounded-xl hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
+                >
                   <X size={20} />
                 </button>
               </div>
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span>Voice Output (Text-to-Speech)</span>
+                <div className="flex items-center justify-between p-3 bg-gray-700 rounded-xl">
+                  <span className="text-white">Voice Output</span>
                   <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" checked={settings.voiceOutput} onChange={() => handleSettingsChange('voiceOutput')} className="sr-only peer" />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <input 
+                      type="checkbox" 
+                      checked={settings.voiceOutput} 
+                      onChange={() => handleSettingsChange('voiceOutput')} 
+                      className="sr-only peer" 
+                    />
+                    <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                   </label>
                 </div>
               </div>
@@ -352,18 +417,28 @@ const MessageBubble = ({ message }) => {
       className={`flex items-start gap-3 ${isUser ? 'justify-end' : ''}`}
     >
       {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+        <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
           R
         </div>
       )}
-      <div className={`max-w-xl p-3 rounded-xl ${isUser ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'} ${error ? 'bg-red-100 dark:bg-red-900 border border-red-500 text-red-700 dark:text-red-300' : ''}`}>
-        <p className="whitespace-pre-wrap">{text || "..."}</p>
+      <div className={`max-w-xl p-4 rounded-2xl ${
+        isUser 
+          ? 'bg-blue-600 text-white' 
+          : 'bg-gray-800 border border-gray-700 text-gray-100'
+      } ${error ? 'bg-red-900 border-red-600 text-red-200' : ''}`}>
+        <p className="whitespace-pre-wrap leading-relaxed">{text || "..."}</p>
         {!isUser && text && !error && (
-          <div className="flex items-center gap-2 mt-2 text-gray-500 dark:text-gray-400">
-            <button onClick={handleCopy} className="hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-              {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+          <div className="flex items-center gap-2 mt-3 text-gray-400">
+            <button 
+              onClick={handleCopy} 
+              className="hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-700"
+            >
+              {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
             </button>
-            <button onClick={handleSpeak} className="hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+            <button 
+              onClick={handleSpeak} 
+              className="hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-700"
+            >
               <Volume2 size={16} />
             </button>
           </div>
@@ -379,22 +454,22 @@ const TypingIndicator = () => (
     animate={{ opacity: 1, y: 0 }}
     className="flex items-center gap-3"
   >
-    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+    <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
         R
     </div>
-    <div className="flex items-center space-x-1 p-3 bg-gray-200 dark:bg-gray-700 rounded-xl">
+    <div className="flex items-center space-x-1 p-4 bg-gray-800 border border-gray-700 rounded-2xl">
       <motion.div
-        className="w-2 h-2 bg-gray-500 rounded-full"
+        className="w-2 h-2 bg-gray-400 rounded-full"
         animate={{ y: [0, -4, 0] }}
         transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className="w-2 h-2 bg-gray-500 rounded-full"
+        className="w-2 h-2 bg-gray-400 rounded-full"
         animate={{ y: [0, -4, 0] }}
         transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
       />
       <motion.div
-        className="w-2 h-2 bg-gray-500 rounded-full"
+        className="w-2 h-2 bg-gray-400 rounded-full"
         animate={{ y: [0, -4, 0] }}
         transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
       />
